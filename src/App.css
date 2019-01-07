@@ -1,0 +1,53 @@
+.App {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-evenly;
+  height: 100%;
+  background: #f5f8fa;
+}
+
+.AppHeader {
+  padding: 10px;
+}
+
+.AppContent {
+  display: flex;
+  flex: 1;
+  justify-content: space-evenly;
+  flex-direction: row;
+}
+
+.ConfigContent {
+  width: 50%;
+  background: #ebf1f5;
+  margin: 10px;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.SimulationContent {
+  width: 50%;
+  background: white;
+  margin: 10px;
+  padding: 10px;
+  border-radius: 5px;
+}
+
+.AppFooter {
+  height: 40px;
+}
+
+.NavBar {
+  display:flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.Logo {
+  width: 64px;
+  height: 64px;
+}
+
+.Title {
+  font-size: 24px;
+}
