@@ -1,3 +1,11 @@
+export function getTicketPriceLabel(nums: number, chances: number): string {
+    let price = getTicketPrice(nums, chances);
+    if (price) 
+        return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(price);
+    else 
+        return "N/A";
+}
+
 export function getTicketPrice(nums: number, chances: number): number | undefined {
     let prices = [
         /*         5      6     7        8       9

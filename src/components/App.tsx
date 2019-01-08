@@ -2,12 +2,8 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { FormGroup, InputGroup } from "@blueprintjs/core";
-import Form from './Form';
+import Form, { FormState } from './Form';
 import Simulation from './Simulation';
-
-class AppState {
-  
-}
 
 class App extends Component {
   render() {
@@ -21,17 +17,18 @@ class App extends Component {
           </div>
           <div className="AppContent">
             <div className="ConfigContent">
-              <Form />
+              <Form onStart={this.onStartSim}/>
             </div>
             <div className="SimulationContent">
               <Simulation />
             </div>
           </div>
-          <div className="AppFooter">Footer</div>
+          <div className="AppFooter">Jouer comporte des risques stupides. Je veux dire, on est dans le mathématiquement absurde, la. Ne jouez pas au loto.</div>
 
       </div>
     );
   }
+  //private onStartSim = (formState: FormState) =>  
 }
 
 export default App;

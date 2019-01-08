@@ -1,0 +1,11 @@
+.ticketPrice {
+    display: flex;
+    flex: 1;
+    justify-content: space-evenly;
+    font-size: 20px;
+}
+
+.divider {
+    margin-top: 25px;
+    margin-bottom: 25px;
+}
