@@ -2,14 +2,17 @@ import React, { Component } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { FormGroup, InputGroup } from "@blueprintjs/core";
+import Form from './Form';
+import Simulation from './Simulation';
 
-import { getTicketPrice } from './Simulation'
+class AppState {
+  
+}
 
 class App extends Component {
   render() {
     return (
       <div className="App">
-
           <div className="AppHeader">
             <div className="NavBar">
               <img src={logo} className="Logo" alt="logo" />
@@ -18,18 +21,11 @@ class App extends Component {
           </div>
           <div className="AppContent">
             <div className="ConfigContent">
-
-              {getTicketPrice(5,1)}
-
-              <FormGroup
-                inline={true}
-                label="Prix de la grille"
-                labelFor="text-input">
-                <InputGroup id="text-input" placeholder="Placeholder text" />
-          </FormGroup>    
-
+              <Form />
             </div>
-            <div className="SimulationContent">bb</div>
+            <div className="SimulationContent">
+              <Simulation />
+            </div>
           </div>
           <div className="AppFooter">Footer</div>
 
