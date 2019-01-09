@@ -42,20 +42,19 @@ class App extends Component {
                 <div /> :
                 <div>
                   <ProgressBar value={this.getProgressFloat()} animate={false} />
-
                   <table className={"bp3-html-table .modifier"}>
                     <thead>
                       <tr>
-                        <th>Project</th>
-                        <th>Description</th>
-                        <th>Technologies</th>
+                        <th>Gains</th>
+                        <th>Nombre d'occurences</th>
+                        <th>Total</th>
                       </tr>
                     </thead>
                     <tbody>
                       <tr>
-                        <td>Blueprint</td>
-                        <td>CSS framework and UI toolkit</td>
-                        <td>Sass, TypeScript, React</td>
+                        <td>2 numéros</td>
+                        <td>1</td>
+                        <td>1.3€</td>
                       </tr>
                     </tbody>
                   </table>
