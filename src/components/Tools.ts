@@ -6,6 +6,11 @@ export function getTicketPriceLabel(nums: number, chances: number): string {
         return "N/A";
 }
 
+export function getMaxChances(nums: number) {
+    let maxChances = [10,10,8,3,1];
+    return maxChances[nums-5];
+}
+
 export function getTicketPrice(nums: number, chances: number): number | undefined {
     let prices = [
         /*         5      6     7        8       9

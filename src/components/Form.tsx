@@ -1,6 +1,6 @@
 import React, { Component } from 'react';
 import { FormGroup, Slider, Divider, Button } from "@blueprintjs/core";
-import { getTicketPriceLabel } from './Tools';
+import { getTicketPriceLabel, getMaxChances } from './Tools';
 import './Form.css'
 
 export interface FormState {
@@ -34,7 +34,7 @@ class Form extends Component<FormProps, any> {
                     <Slider initialValue={5} min={5} max={9} stepSize={1} onChange={this.onNumChange} value={this.state.mainNum} />
                 </FormGroup>
                 <FormGroup label="Numéros chances" labelFor="SliderChanceNum">
-                    <Slider className="SliderChanceNum" initialValue={1} min={1} max={10} stepSize={1} onChange={this.onNumChanceChange} value={this.state.chanceNum} />
+                    <Slider className="SliderChanceNum" initialValue={1} min={1} max={getMaxChances(this.state.mainNum)} stepSize={1} onChange={this.onNumChanceChange} value={this.state.chanceNum} />
                 </FormGroup>
 
                 <Divider className={"divider"}/>
@@ -56,7 +56,16 @@ class Form extends Component<FormProps, any> {
         )
     }
 
-    private onNumChange = (num: number) => this.setState({ mainNum: num });
+    private onNumChange = (num: number) => {
+        this.setState({ mainNum: num });    
+
+        let newMax = getMaxChances(num);
+
+        if (newMax < this.state.chanceNum) {
+            this.setState({ chanceNum: newMax });    
+        }
+    }
+    
     private onNumChanceChange = (num: number) => this.setState({ chanceNum: num });
     private onIterationChange = (num: number) => this.setState({ iterationIndex: num, iterations: this.iterations[num] });
     private onStart = () => this.props.onStart(this.state);
