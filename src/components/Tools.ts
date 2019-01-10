@@ -1,9 +1,11 @@
-import { createFactory } from "react";
+export function euros(f: number) {
+    return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(f);
+}
 
 export function getTicketPriceLabel(nums: number, chances: number): string {
     let price = getTicketPrice(nums, chances);
     if (price) 
-        return new Intl.NumberFormat('fr-FR', { style: 'currency', currency: 'EUR' }).format(price);
+        return euros(price);
     else 
         return "N/A";
 }

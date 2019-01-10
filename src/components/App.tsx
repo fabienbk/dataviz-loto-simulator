@@ -3,7 +3,7 @@ import logo from './logo.svg';
 import './App.css';
 import { ProgressBar } from "@blueprintjs/core";
 import Form, { FormState } from './Form';
-import { getWinnings, getTicketPrice } from './Tools';
+import { getWinnings, getTicketPrice, euros } from './Tools';
 
 enum SimState {
   OFF, STARTED, ENDED
@@ -38,6 +38,9 @@ class App extends Component {
     else {
       let w = this.state.winnings;
       simulationContent = <div>
+        
+        <h1>Balance: {euros(this.state.currentWin)}</h1>
+
         <ProgressBar value={this.getProgressFloat()} animate={false} intent={"primary"} />
         <table className={"bp3-html-table .modifier"}>
           <thead>
@@ -54,7 +57,7 @@ class App extends Component {
                       return (<tr>
                         <td>{key}</td>
                         <td>{w[key].count}</td>
-                        <td>{w[key].amount}</td>
+                        <td>{euros(w[key].amount)}</td>
                       </tr>)
                   })
             }
@@ -91,8 +94,19 @@ class App extends Component {
       window.requestAnimationFrame(() => {
         let i = this.state.iteration;
         if (this.state.formState && i < this.state.formState.iterations) {
-          this.setState({ iteration: i + 1 });
-          this.runOneGame(this.state.formState);
+          
+          if (this.state.formState.iterations > 100) {
+            let inc = this.state.formState.iterations / 100;
+            for(let j=0; j < inc; j++) 
+              this.runOneGame(this.state.formState);
+            
+            this.setState({ iteration: i + inc });
+          }
+          else {
+            this.setState({ iteration: i + 1 });
+            this.runOneGame(this.state.formState);
+          }
+          
         }
         else
           this.setState({ simulationState: SimState.ENDED });
@@ -124,17 +138,18 @@ class App extends Component {
     let cost = getTicketPrice(formState.mainNum, formState.chanceNum);
     let win = getWinnings(matchingBalls, matchingChances);
 
-    this.setState({ currentWin: this.state.currentWin + (win - (cost || 0))});
+    let net = (win - (cost || 0));
+    this.setState({ currentWin: this.state.currentWin + net});
 
     let currentWinnings = this.state.winnings;
     if (win > 0) {
       let label = matchingBalls + (matchingChances > 0 ? " + Chance" : "");
       if (currentWinnings[label]) {
-        currentWinnings[label].amount ++;
-        currentWinnings[label].amount += win;
+        currentWinnings[label].count ++;
+        currentWinnings[label].amount += net;
       }
       else {
-        currentWinnings[label] = {amount: win, count: 1}
+        currentWinnings[label] = {amount: net, count: 1}
       }
       this.setState({winnings: currentWinnings});
     }
@@ -150,7 +165,9 @@ class App extends Component {
     this.setState({
       simulationState: SimState.STARTED,
       iteration: 0,
-      formState: formState
+      formState: formState,
+      currentWin: 0,
+      winnings: {},
     });
   }
 }
