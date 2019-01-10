@@ -9,21 +9,59 @@ enum SimState {
   OFF, STARTED, ENDED
 }
 
+interface Winning {
+
+}
+
 interface AppState {
   simulationState: SimState;
   formState?: FormState,
   iteration: number;
   currentWin: number;
+  winnings: { [num: number]: Winning; };
 }
 
 class App extends Component {
   public state: AppState = {
     simulationState: SimState.OFF,
     iteration: 0,
-    currentWin: 0
+    currentWin: 0,
+    winnings : {
+      2: {},
+      3: {},
+      4: {},
+      5: {},      
+    }
   };
 
   render() {
+
+    let simulationContent;
+    if (this.state.simulationState == SimState.OFF) {
+      simulationContent = <div/>
+    }
+    else {
+      simulationContent = <div>
+        <ProgressBar value={this.getProgressFloat()} animate={false} />
+        <table className={"bp3-html-table .modifier"}>
+          <thead>
+            <tr>
+              <th>Gains</th>
+              <th>Nombre d'occurences</th>
+              <th>Total</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>2 numéros</td>
+              <td>1</td>
+              <td>1.3€</td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    }
+
     return (
       <div className="App">
         <div className="AppHeader">
@@ -37,29 +75,7 @@ class App extends Component {
             <Form onStart={this.onStartSim} />
           </div>
           <div className="SimulationContent">
-            {
-              this.state.simulationState == SimState.OFF ?
-                <div /> :
-                <div>
-                  <ProgressBar value={this.getProgressFloat()} animate={false} />
-                  <table className={"bp3-html-table .modifier"}>
-                    <thead>
-                      <tr>
-                        <th>Gains</th>
-                        <th>Nombre d'occurences</th>
-                        <th>Total</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr>
-                        <td>2 numéros</td>
-                        <td>1</td>
-                        <td>1.3€</td>
-                      </tr>
-                    </tbody>
-                  </table>
-                </div>
-            }
+            {simulationContent}
           </div>
         </div>
         <div className="AppFooter">Jouer comporte des risques stupides. Je veux dire, on est dans le mathématiquement absurde, la. Ne jouez pas au loto.</div>
