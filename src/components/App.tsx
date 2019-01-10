@@ -3,14 +3,15 @@ import logo from './logo.svg';
 import './App.css';
 import { ProgressBar } from "@blueprintjs/core";
 import Form, { FormState } from './Form';
-import { number } from 'prop-types';
+import { getWinnings, getTicketPrice } from './Tools';
 
 enum SimState {
   OFF, STARTED, ENDED
 }
 
 interface Winning {
-
+  count: number
+  amount: number
 }
 
 interface AppState {
@@ -18,7 +19,7 @@ interface AppState {
   formState?: FormState,
   iteration: number;
   currentWin: number;
-  winnings: { [num: number]: Winning; };
+  winnings: { [label: string]: Winning; };
 }
 
 class App extends Component {
@@ -26,23 +27,18 @@ class App extends Component {
     simulationState: SimState.OFF,
     iteration: 0,
     currentWin: 0,
-    winnings : {
-      2: {},
-      3: {},
-      4: {},
-      5: {},      
-    }
+    winnings : {}
   };
 
   render() {
-
     let simulationContent;
     if (this.state.simulationState == SimState.OFF) {
       simulationContent = <div/>
     }
     else {
+      let w = this.state.winnings;
       simulationContent = <div>
-        <ProgressBar value={this.getProgressFloat()} animate={false} />
+        <ProgressBar value={this.getProgressFloat()} animate={false} intent={"primary"} />
         <table className={"bp3-html-table .modifier"}>
           <thead>
             <tr>
@@ -51,12 +47,17 @@ class App extends Component {
               <th>Total</th>
             </tr>
           </thead>
-          <tbody>
-            <tr>
-              <td>2 numéros</td>
-              <td>1</td>
-              <td>1.3€</td>
-            </tr>
+          <tbody> 
+            { 
+              Object.keys(w)
+                  .map(key => {
+                      return (<tr>
+                        <td>{key}</td>
+                        <td>{w[key].count}</td>
+                        <td>{w[key].amount}</td>
+                      </tr>)
+                  })
+            }
           </tbody>
         </table>
       </div>
@@ -89,21 +90,63 @@ class App extends Component {
 
       window.requestAnimationFrame(() => {
         let i = this.state.iteration;
-        if (this.state.formState && i < this.state.formState.iterations)
+        if (this.state.formState && i < this.state.formState.iterations) {
           this.setState({ iteration: i + 1 });
+          this.runOneGame(this.state.formState);
+        }
         else
           this.setState({ simulationState: SimState.ENDED });
       });
+      
     }
   }
 
-  private getProgressFloat = () => {
+  generateNumbers(n : number, max: number) {
+    let balls = Array.from(Array(max + 1).keys()).slice(1);
+    let result = Array<number>();
+    for (let i = 0; i < n; i ++) {
+      let ri = Math.round(Math.random() * balls.length);
+      let ball = balls[ri]; 
+      balls.splice(ri, 1);
+      result.push(ball);
+    }
+    return result.sort();
+  }
+
+  runOneGame =  (formState: FormState) => {
+    let balls = this.generateNumbers(5, 49);
+    let chance = this.generateNumbers(1, 10);
+    let playerBalls = this.generateNumbers(5, 49);
+    let playerChance = this.generateNumbers(1, 10);
+    let matchingBalls = balls.filter(value => -1 !== playerBalls.indexOf(value)).length;
+    let matchingChances = chance.filter(value => -1 !== playerChance.indexOf(value)).length;
+
+    let cost = getTicketPrice(formState.mainNum, formState.chanceNum);
+    let win = getWinnings(matchingBalls, matchingChances);
+
+    this.setState({ currentWin: this.state.currentWin + (win - (cost || 0))});
+
+    let currentWinnings = this.state.winnings;
+    if (win > 0) {
+      let label = matchingBalls + (matchingChances > 0 ? " + Chance" : "");
+      if (currentWinnings[label]) {
+        currentWinnings[label].amount ++;
+        currentWinnings[label].amount += win;
+      }
+      else {
+        currentWinnings[label] = {amount: win, count: 1}
+      }
+      this.setState({winnings: currentWinnings});
+    }
+  }
+
+  getProgressFloat = () => {
     if (this.state.formState)
       return this.state.iteration / this.state.formState.iterations;
     return 0;
   }
 
-  private onStartSim = (formState: FormState) => {
+  onStartSim = (formState: FormState) => {
     this.setState({
       simulationState: SimState.STARTED,
       iteration: 0,

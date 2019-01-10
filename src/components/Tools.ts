@@ -1,3 +1,5 @@
+import { createFactory } from "react";
+
 export function getTicketPriceLabel(nums: number, chances: number): string {
     let price = getTicketPrice(nums, chances);
     if (price) 
@@ -24,14 +26,17 @@ export function getTicketPrice(nums: number, chances: number): number | undefine
         /*8*/ [17.60, 105.60, 369.60, undefined, undefined],
         /*9*/ [19.80, 118.80, undefined, undefined, undefined],
         /*10*/ [22.00, 132.00, undefined, undefined, undefined] 
-    ]
-    
+    ]  
     return prices[chances-1][nums-5];
 }
     
-/*
-2 numéros: 5 (10)
-3 numéros: 20 (50)
-4 numéros: 500 (1000)
-5 numéros: 100 000 (2 000 000)
-*/
+export function getWinnings(nums: number, chances: number): number {
+    if (nums < 2) return 0;
+    let winnings = [
+        [5, 10],
+        [20, 50],
+        [500, 1000],
+        [100000, 2000000]
+    ];
+    return winnings[nums-2][chances];
+}
