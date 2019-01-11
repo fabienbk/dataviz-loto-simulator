@@ -4,14 +4,22 @@ import './App.css';
 import { ProgressBar } from "@blueprintjs/core";
 import Form, { FormState } from './Form';
 import { getWinnings, getTicketPrice, euros } from './Tools';
+import { accessSync } from 'fs';
 
 enum SimState {
   OFF, STARTED, ENDED
 }
 
 interface Winning {
-  count: number
-  amount: number
+  count: number;
+  amount: number;
+}
+
+type Winnings = { [label: string]: Winning; };
+
+interface SimUpdate {  
+  balanceDelta: number;
+  winningsUpdate: Winnings;
 }
 
 interface AppState {
@@ -19,7 +27,7 @@ interface AppState {
   formState?: FormState,
   iteration: number;
   currentWin: number;
-  winnings: { [label: string]: Winning; };
+  winnings: Winnings;
 }
 
 class App extends Component {
@@ -93,20 +101,9 @@ class App extends Component {
 
       window.requestAnimationFrame(() => {
         let i = this.state.iteration;
-        if (this.state.formState && i < this.state.formState.iterations) {
-          
-          if (this.state.formState.iterations > 100) {
-            let inc = this.state.formState.iterations / 100;
-            for(let j=0; j < inc; j++) 
-              this.runOneGame(this.state.formState);
-            
-            this.setState({ iteration: i + inc });
-          }
-          else {
+        if (this.state.formState && i < this.state.formState.iterations) {          
             this.setState({ iteration: i + 1 });
-            this.runOneGame(this.state.formState);
-          }
-          
+            this.runOneGame(this.state.formState, 1);           // TODO adapt iterations
         }
         else
           this.setState({ simulationState: SimState.ENDED });
@@ -127,7 +124,33 @@ class App extends Component {
     return result.sort();
   }
 
-  runOneGame =  (formState: FormState) => {
+  runOneGame =  (formState: FormState, n: number) => {      
+    let updateList = [ ];
+
+    for(let i = 0; i < n; i++) {
+      updateList.push(this.simOneGame(formState));
+    }
+    
+    let accumulatedUpdate = updateList.reduce( (acc, current) => {
+      acc.balanceDelta += current.balanceDelta;
+      Object.keys(current.winningsUpdate).forEach( k => {
+        if (acc.winningsUpdate[k]) {
+          acc.winningsUpdate[k].amount += current.winningsUpdate[k].amount;
+          acc.winningsUpdate[k].count += 1;
+        }
+        else {
+          acc.winningsUpdate[k] = {count: 1, amount: current.winningsUpdate[k].amount};
+        }
+      });
+      return acc;
+    });
+
+    // TODO merge into state
+
+    this.setState({..accumulatedUpdate});
+  }
+
+  simOneGame =  (formState: FormState) : SimUpdate => {
     let balls = this.generateNumbers(5, 49);
     let chance = this.generateNumbers(1, 10);
     let playerBalls = this.generateNumbers(5, 49);
@@ -138,22 +161,23 @@ class App extends Component {
     let cost = getTicketPrice(formState.mainNum, formState.chanceNum);
     let win = getWinnings(matchingBalls, matchingChances);
 
-    let net = (win - (cost || 0));
-    this.setState({ currentWin: this.state.currentWin + net});
+    let net : number = (win - (cost || 0));
+    let winUpdate : Winnings = {};
 
-    let currentWinnings = this.state.winnings;
     if (win > 0) {
       let label = matchingBalls + (matchingChances > 0 ? " + Chance" : "");
-      if (currentWinnings[label]) {
-        currentWinnings[label].count ++;
-        currentWinnings[label].amount += net;
+      if (winUpdate[label]) {
+        winUpdate[label].count ++;
+        winUpdate[label].amount += net;
       }
       else {
-        currentWinnings[label] = {amount: net, count: 1}
-      }
-      this.setState({winnings: currentWinnings});
+        winUpdate[label] = {amount: net, count: 1}
+      }      
     }
+    
+    return { balanceDelta: net, winningsUpdate: winUpdate};
   }
+
 
   getProgressFloat = () => {
     if (this.state.formState)
