@@ -1,10 +1,10 @@
-import React, { Component } from 'react';
+import React, { Component, RefObject } from 'react';
 import logo from './logo.svg';
 import './App.css';
 import { ProgressBar } from "@blueprintjs/core";
 import Form, { FormState } from './Form';
 import { getWinnings, getTicketPrice, euros } from './Tools';
-import { accessSync } from 'fs';
+import BalanceChart from './BalanceChart';
 
 enum SimState {
   OFF, STARTED, ENDED
@@ -31,12 +31,20 @@ interface AppState {
 }
 
 class App extends Component {
+
   public state: AppState = {
     simulationState: SimState.OFF,
     iteration: 0,
     currentWin: 0,
     winnings : {}
   };
+
+  public graph: RefObject<BalanceChart>;
+
+  constructor(props: any) {
+    super(props);
+    this.graph = React.createRef();
+  }
 
   render() {
     let simulationContent;
@@ -45,8 +53,8 @@ class App extends Component {
     }
     else {
       let w = this.state.winnings;
+
       simulationContent = <div>
-        
         <h1>Balance: {euros(this.state.currentWin)}</h1>
 
         <ProgressBar value={this.getProgressFloat()} animate={false} intent={"primary"} />
@@ -71,6 +79,7 @@ class App extends Component {
             }
           </tbody>
         </table>
+        <BalanceChart ref={this.graph}/>
       </div>
     }
 
@@ -125,29 +134,27 @@ class App extends Component {
   }
 
   runOneGame =  (formState: FormState, n: number) => {      
-    let updateList = [ ];
-
     for(let i = 0; i < n; i++) {
-      updateList.push(this.simOneGame(formState));
-    }
-    
-    let accumulatedUpdate = updateList.reduce( (acc, current) => {
-      acc.balanceDelta += current.balanceDelta;
-      Object.keys(current.winningsUpdate).forEach( k => {
-        if (acc.winningsUpdate[k]) {
-          acc.winningsUpdate[k].amount += current.winningsUpdate[k].amount;
-          acc.winningsUpdate[k].count += 1;
+      let res = this.simOneGame(formState);
+      
+      this.state.currentWin += res.balanceDelta;
+
+      Object.keys(res.winningsUpdate).forEach( k => {
+        if (this.state.winnings[k]) {
+          this.state.winnings[k].amount += res.winningsUpdate[k].amount;
+          this.state.winnings[k].count += 1;
         }
         else {
-          acc.winningsUpdate[k] = {count: 1, amount: current.winningsUpdate[k].amount};
+          this.state.winnings[k] = {count: 1, amount: res.winningsUpdate[k].amount};
         }
       });
-      return acc;
-    });
+    }
 
-    // TODO merge into state
+    this.setState({currentWin: this.state.currentWin, winnings: this.state.winnings});
 
-    this.setState({..accumulatedUpdate});
+    if (this.graph.current)
+      this.graph.current.dataPoints.push(this.state.currentWin);
+
   }
 
   simOneGame =  (formState: FormState) : SimUpdate => {
