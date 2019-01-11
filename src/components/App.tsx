@@ -152,8 +152,10 @@ class App extends Component {
 
     this.setState({currentWin: this.state.currentWin, winnings: this.state.winnings});
 
-    if (this.graph.current)
-      this.graph.current.dataPoints.push(this.state.currentWin);
+    if (this.graph.current) {
+      this.graph.current.dataPoints.push({ x:this.state.iteration, y:this.state.currentWin });
+      if (this.graph.current.chart) this.graph.current.chart.update();
+    }
 
   }
 

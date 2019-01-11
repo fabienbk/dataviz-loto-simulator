@@ -1,10 +1,11 @@
 import React, { Component } from "react";
 import "./BalanceChart.css"
-import Chart from 'chart.js';
+import Chart, { Point } from 'chart.js';
 
 class BalanceChart extends Component {
     public chart ?: Chart;
-    public dataPoints: Array<number> = [];
+    public dataPoints: Array<Point> = [];
+    public dataLabels: string[] = [];
     public lastUpdate = new Date();
 
     constructor(props: any) {
@@ -13,15 +14,27 @@ class BalanceChart extends Component {
 
     componentDidMount() {
         this.chart = new Chart("myChart", {
-            type: 'bar',
+            type: 'line',
             data: {
                 datasets: [{
-                    label: 'Balance',
+                    label: "Balance",
                     data: this.dataPoints,
                     borderWidth: 1
                 }]
             },
             options: {
+                animation: {
+                    duration: 0, // general animation time
+                },
+                hover: {
+                    animationDuration: 0, // duration of animations when hovering an item
+                },
+                responsiveAnimationDuration: 0, // animation duration after a resize
+                elements: {
+                    line: {
+                        tension: 0, // disables bezier curves
+                    }
+                },
                 scales: {
                     yAxes: [{
                         ticks: {
@@ -40,7 +53,7 @@ class BalanceChart extends Component {
     render() {
       this.lastUpdate = new Date();
       return (
-        <canvas id="myChart" width="400" height="400"></canvas>
+        <canvas id="myChart" width="400" height="100%"></canvas>
       )
     }
 
